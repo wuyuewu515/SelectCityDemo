@@ -1,11 +1,20 @@
 <resources>
 
     <!-- Base application theme. -->
-    <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+    <style name="AppTheme" parent="Theme.AppCompat.NoActionBar">
         <!-- Customize your theme here. -->
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
+    </style>
+
+    <style name="tv_14_66">
+        <item name="android:textColor">@color/font_gray_66</item>
+        <item name="android:textSize">14sp</item>
+    </style>
+
+    <style name="tv_14_black" parent="tv_14_66">
+        <item name="android:textColor">@color/font_black</item>
     </style>
 
 </resources>

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@color/bg_white"
+    android:paddingLeft="15dp">
+
+    <TextView
+        android:id="@+id/tv_item_credit_city_tag"
+        style="@style/tv_14_black"
+        android:layout_width="match_parent"
+        android:layout_height="32dp"
+        android:background="@drawable/shape_bg_gray"
+        android:gravity="center_vertical"
+        android:text="7011" />
+
+    <TextView
+        android:id="@+id/tv_item_credit_city_name"
+        style="@style/tv_14_black"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:layout_below="@+id/tv_item_credit_city_tag"
+        android:gravity="center_vertical"
+        android:text="@string/app_name"
+        android:textSize="16sp" />
+
+    <ImageView
+        android:layout_width="match_parent"
+        android:layout_height="1px"
+        android:layout_below="@+id/tv_item_credit_city_name"
+        android:background="#ddd" />
+
+</RelativeLayout>
