@@ -20,8 +20,9 @@ import com.mcxtzhang.indexlib.IndexBar.widget.IndexBar;
 import com.wyw.selectcitydemo.meituan.CommonAdapter;
 import com.wyw.selectcitydemo.meituan.HeaderRecyclerAndFooterWrapperAdapter;
 import com.wyw.selectcitydemo.meituan.ViewHolder;
-import com.wyw.selectcitydemo.utils.JsonUtils;
 import com.wyw.selectcitydemo.utils.SharedPreUtils;
+
+import org.apache.commons.lang3a.exception.StringUtils;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -30,8 +31,6 @@ import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
-
-import org.apache.commons.lang3a.exception.StringUtils;
 
 
 /**
@@ -51,7 +50,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @BindView(R.id.indexBar)
     IndexBar mIndexBar;
     @BindView(R.id.tvSideBarHint)
-    TextView tvSideBarHint;
+    TextView mTvSideBarHint;
 
 
     private Activity mActivity;
@@ -109,6 +108,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mBodyDatas.add(new CityInfoBean().setName("苏州").setId("0532"));
         mBodyDatas.add(new CityInfoBean().setName("无锡").setId("0232"));
 
+
+        //indexbar初始化
+        mIndexBar.setmPressedShowTextView(mTvSideBarHint)//设置HintTextView
+                .setNeedRealIndex(true)//设置需要真实的索引
+                .setmLayoutManager(mManager);
+
+        if (mBodyDatas.size() == 0) {
+            return;
+        }
     }
 
     protected void dataBind() {
@@ -249,20 +257,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             intent.putExtra(CITY, model);
             String modelId = model.getId();
 
-            //遍历数据源找到名字相同的数据，并获取城市id
-            if (TextUtils.isEmpty(modelId)) {
-                for (BaseIndexPinyinBean city : mDatas) {
-                    if (city instanceof CityInfoBean) {
-                        CityInfoBean cityInfo = (CityInfoBean) city;
-                        String cityId = cityInfo.getId();
-                        if (!TextUtils.isEmpty(cityId) && cityInfo.getName().startsWith(cityName)) {
-                            modelId = cityId;
-                            model.setId(modelId);
-                            break;
-                        }
-                    }
-                }
-            }
 
             if ("定位中".equalsIgnoreCase(cityName)) {//定位中
                 Toast.makeText(mActivity, "正在定位中,请从列表中直接选择", Toast.LENGTH_SHORT);
