@@ -12,6 +12,9 @@ import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -51,6 +54,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     IndexBar mIndexBar;
     @BindView(R.id.tvSideBarHint)
     TextView mTvSideBarHint;
+    @BindView(R.id.tv_selectCity_back)
+    ImageView ivSelectCityBack;
+    @BindView(R.id.etd_search)
+    EditTextWithDel etdSearch;
 
 
     private Activity mActivity;
@@ -71,6 +78,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        //阻止软键盘弹出
+        getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN);
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
         mActivity = this;
@@ -97,7 +106,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mCityRcv.setOnFlingListener(new RecyclerView.OnFlingListener() {
             @Override
             public boolean onFling(int velocityX, int velocityY) {
-         //       InputTools.HideKeyboard(etdSearch);  //滑动隐藏键盘
+                HideKeyboard(etdSearch);
                 return false;
             }
         });
@@ -117,6 +126,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         if (mBodyDatas.size() == 0) {
             return;
         }
+
+        ivSelectCityBack.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                finish();
+            }
+        });
     }
 
     protected void dataBind() {
@@ -326,6 +342,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         public CityViewHolder(View view) {
             super(view.getContext(), view);
             ButterKnife.bind(this, view);
+        }
+    }
+
+    // 隐藏虚拟键盘
+    public static void HideKeyboard(View v) {
+        InputMethodManager imm = (InputMethodManager) v.getContext().getApplicationContext().getSystemService(
+                Context.INPUT_METHOD_SERVICE);
+        if (imm.isActive()) {
+            imm.hideSoftInputFromWindow(v.getApplicationWindowToken(), 0);
         }
     }
 }
