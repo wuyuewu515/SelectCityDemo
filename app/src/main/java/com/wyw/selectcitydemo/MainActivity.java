@@ -13,9 +13,7 @@ import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.ImageView;
@@ -75,7 +73,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private List<CityInfoBean> historyCitys = new ArrayList<>();
     protected List<BaseIndexPinyinBean> mBodyDatas = new ArrayList<>();
-    protected List<BaseIndexPinyinBean> mDatas = new ArrayList<>();
+    protected List<BaseIndexPinyinBean> mAllDatas = new ArrayList<>();
     private CityHeaderBean localHeader = new CityHeaderBean();
     private CityHeaderBean hotHeader = new CityHeaderBean();
     private CityHeaderBean HistoryHeader = new CityHeaderBean();
@@ -171,6 +169,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 finish();
             }
         });
+
     }
 
     protected void dataBind() {
@@ -197,14 +196,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         historyCitys = JsonUtils.json2List(sharedPreUtils.getValue(CITY_KEY, ""), CityInfoBean.class);
         HistoryHeader.setCityList(historyCitys).setSuspensionTag(INDEX_STRING_HISTORY);
 
-        filterAdapter = new FilterAdapter(mActivity, mBodyDatas);
+        filterAdapter = new FilterAdapter(mActivity, R.layout.item_shebao_city_layout, mBodyDatas);
+
+        //通过对recycleview的adapter添加heardview或者footerview
         mHeaderAdapter = new HeaderRecyclerAndFooterWrapperAdapter(filterAdapter) {
             @Override
             protected void onBindHeaderHolder(ViewHolder holder, int headerPos, int layoutId, Object o) {
                 final CityHeaderBean meituanHeaderBean = (CityHeaderBean) o;
 
                 switch (layoutId) {
-                    case R.layout.meituan_item_header_local: {
+                    case R.layout.meituan_item_header_local: { //当前定位城市
                         RecyclerView recyclerView = holder.getView(R.id.rvCity);
                         recyclerView.setAdapter(
                                 new CommonAdapter<CityInfoBean>(mActivity, R.layout.item_local_city, meituanHeaderBean.getCityList()) {
@@ -216,8 +217,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         recyclerView.setLayoutManager(new LinearLayoutManager(mActivity));
                     }
                     break;
-                    case R.layout.meituan_item_header: {
-                        //网格
+                    case R.layout.meituan_item_header: { //热门城市
                         RecyclerView recyclerView = holder.getView(R.id.rvCity);
                         recyclerView.setAdapter(
                                 new CommonAdapter<CityInfoBean>(mActivity, R.layout.item_hot_city, meituanHeaderBean.getCityList()) {
@@ -252,10 +252,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         recyclerView.setLayoutManager(new GridLayoutManager(mActivity, 3));
                     }
                     break;
-                    case R.layout.meituan_item_header_top:
-                        CityHeaderBean meituanTopHeaderBean = (CityHeaderBean) o;
-                        holder.setText(R.id.tvCurrent, meituanTopHeaderBean.getTarget());
-                        break;
                     default:
                         break;
                 }
@@ -265,9 +261,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         /**
          * 初始化赋值
          */
-        mDatas.addAll(mBodyDatas);
-        mDecoration = new CharDecoration(mActivity, mDatas);
-        mDecoration.setmDatas(mDatas);
+        mAllDatas.addAll(mBodyDatas);
+        mDecoration = new CharDecoration(mActivity, mAllDatas);
+        mDecoration.setmDatas(mAllDatas);
 
         mCityRcv.setAdapter(mHeaderAdapter);
 
@@ -275,7 +271,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
          * 初始化过滤条件
          */
         filter(null);
+
+
     }
+
 
     /**
      * 核心方法：1、通过过滤条件初始化数据；2、通过过滤条件控制辅助View；3、应用数据到核心显示控件
@@ -284,23 +283,22 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
      */
     public void filter(String filter) {
         if (StringUtils.isEmpty(filter)) {//无过滤条件
-            mDatas.add(0, localHeader);
-            mDatas.add(1, hotHeader);
-            mDatas.add(2, HistoryHeader);
+            mAllDatas.add(0, localHeader);
+            mAllDatas.add(1, hotHeader);
+            mAllDatas.add(2, HistoryHeader);
 
-            mHeaderAdapter.setHeaderView(0, R.layout.meituan_item_header_local, localHeader);
-            mHeaderAdapter.setHeaderView(1, R.layout.meituan_item_header, hotHeader);
-            mHeaderAdapter.setHeaderView(2, R.layout.meituan_history_header, HistoryHeader);
+            mHeaderAdapter.setHeaderView(0, R.layout.meituan_item_header_local, localHeader);//对应的是当前城市的数据
+            mHeaderAdapter.setHeaderView(1, R.layout.meituan_item_header, hotHeader);//热门城市的数据
+            mHeaderAdapter.setHeaderView(2, R.layout.meituan_history_header, HistoryHeader);//历史城市的记录数据
 
             mCityRcv.addItemDecoration(mDecoration);
             mIndexBar.setVisibility(View.VISIBLE);
         } else {//过滤条件有效，开始初始化过滤条件
-            mDatas.remove(localHeader);
-            mDatas.remove(hotHeader);
-            mDatas.remove(HistoryHeader);
+            mAllDatas.remove(localHeader);
+            mAllDatas.remove(hotHeader);
+            mAllDatas.remove(HistoryHeader);
 
             mHeaderAdapter.clearHeaderView();
-
             mCityRcv.removeItemDecoration(mDecoration);
             mIndexBar.setVisibility(View.GONE);
         }
@@ -308,7 +306,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         /**
          * 应用过滤条件到各个View上
          */
-        mIndexBar.setmSourceDatas(mDatas).invalidate();
+        mIndexBar.setmSourceDatas(mAllDatas).invalidate();
         mIndexBar.getDataHelper().sortSourceDatas(mBodyDatas);
         filterAdapter.setFilter(filter);
         mHeaderAdapter.notifyDataSetChanged();
@@ -325,10 +323,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 cityName = cityName.substring(0, lastIndex);
             }
             Intent intent = new Intent();
-
             intent.putExtra(CITY, model);
             String modelId = model.getId();
-
 
             if ("定位中".equalsIgnoreCase(cityName)) {//定位中
                 Toast.makeText(mActivity, "正在定位中,请从列表中直接选择", Toast.LENGTH_SHORT);
@@ -411,57 +407,39 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
-    class FilterAdapter extends RecyclerView.Adapter<CityViewHolder> {
-        Context context;
-        List<BaseIndexPinyinBean> datas = new ArrayList<>();
-        List<BaseIndexPinyinBean> mDatas = null;
 
-        private CityFilter cityFilter;
+    class FilterAdapter extends CommonAdapter<BaseIndexPinyinBean> {
+        private CityFilter cityFilter = new CityFilter();
 
-        public FilterAdapter(Context context, List<BaseIndexPinyinBean> data) {
-            this.context = context;
-            this.mDatas = data;
-            this.datas.addAll(mDatas);
-            cityFilter = new CityFilter();
+        public FilterAdapter(Context context, int layoutId, List<BaseIndexPinyinBean> datas) {
+            super(context, layoutId, datas);
         }
 
         @Override
-        public CityViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-            return new CityViewHolder(LayoutInflater.from(context)
-                    .inflate(R.layout.item_shebao_city_layout, parent, false));
-
-        }
-
-        @Override
-        public void onBindViewHolder(CityViewHolder holder, int position) {
-            BaseIndexPinyinBean bean = datas.get(position);
-            holder.itemView.setTag(R.id.cb_item_tag, bean);
+        public void convert(ViewHolder holder, BaseIndexPinyinBean cityInfo) {
+            holder.setText(R.id.tv_item_credit_city_name, cityInfo.getTarget());
+            holder.setVisible(R.id.tv_item_credit_city_tag, false);
+            holder.itemView.setTag(R.id.cb_item_tag, cityInfo);
             holder.itemView.setOnClickListener(MainActivity.this);
-            holder.tvCity.setText(bean.getTarget());
-            holder.tvTag.setVisibility(View.GONE);
-        }
-
-        @Override
-        public int getItemCount() {
-            return datas.size();
         }
 
         public void setFilter(String filter) {
+            List<BaseIndexPinyinBean> datas = new ArrayList<>();
             if (TextUtils.isEmpty(filter)) {
                 datas.clear();
-                datas.addAll(mDatas);
+                datas.addAll(mAllDatas);
             } else {
                 //从过滤掉的数据中去除上面三区域的数据
-                List<BaseIndexPinyinBean> temp = CollectionUtils.filter(mDatas, cityFilter.setFilter(filter));
-                temp.remove(localHeader);
-                temp.remove(hotHeader);
-                temp.remove(HistoryHeader);
+                List<BaseIndexPinyinBean> temp = CollectionUtils.filter(mAllDatas, cityFilter.setFilter(filter));
                 datas.clear();
                 datas.addAll(temp);
             }
-
-            notifyDataSetChanged();
+            datas.remove(localHeader);
+            datas.remove(hotHeader);
+            datas.remove(HistoryHeader);
+            setDatas(datas);
         }
+
     }
 
     /**
@@ -488,7 +466,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         public CityFilter setFilter(String filter) {
             this.filter = filter;
-
             return this;
         }
     }
