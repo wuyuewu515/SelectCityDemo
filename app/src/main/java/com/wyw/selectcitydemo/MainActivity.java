@@ -29,6 +29,7 @@ import com.wyw.selectcitydemo.meituan.HeaderRecyclerAndFooterWrapperAdapter;
 import com.wyw.selectcitydemo.meituan.ViewHolder;
 import com.wyw.selectcitydemo.utils.CharacterParser;
 import com.wyw.selectcitydemo.utils.CollectionUtils;
+import com.wyw.selectcitydemo.utils.JsonUtils;
 import com.wyw.selectcitydemo.utils.SharedPreUtils;
 
 import org.apache.commons.lang3a.exception.StringUtils;
@@ -193,11 +194,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         hotCitys.add(new CityInfoBean().setName("无锡").setId("0232"));
         hotHeader.setCityList(hotCitys).setSuspensionTag(INDEX_STRING_HOT);
 
-        //    historyCitys = JsonUtils.json2List(sharedPreUtils.getValue(CITY_KEY, ""), CityInfoBean.class);
-        historyCitys.add(new CityInfoBean().setName("上海").setId("0131"));
-        historyCitys.add(new CityInfoBean().setName("北京").setId("0111"));
-        historyCitys.add(new CityInfoBean().setName("广州").setId("0144"));
-        historyCitys.add(new CityInfoBean().setName("深圳").setId("0344"));
+        historyCitys = JsonUtils.json2List(sharedPreUtils.getValue(CITY_KEY, ""), CityInfoBean.class);
         HistoryHeader.setCityList(historyCitys).setSuspensionTag(INDEX_STRING_HISTORY);
 
         filterAdapter = new FilterAdapter(mActivity, mBodyDatas);
@@ -340,12 +337,46 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             } else {
                 intent.putExtra(CITY, model);
                 setResult(RESULT_OK, intent);
+                addCity2History(model);
                 HideKeyboard(etdSearch);
                 finish();
-
             }
         }
     }
+
+    /**
+     * 添加城市到历史记录中去
+     *
+     * @param cityInfo
+     */
+    private void addCity2History(CityInfoBean cityInfo) {
+        boolean notExit = true;
+        for (BaseIndexPinyinBean city : historyCitys) {
+            if (city instanceof CityInfoBean) {
+                String cityName = ((CityInfoBean) city).getName();
+                if (!TextUtils.isEmpty(cityName) && cityName.contains(cityInfo.getName())) {
+                    notExit = false;
+                    break;
+                }
+            }
+        }
+        if (notExit) {
+            if (historyCitys.size() >= 6) {  //当历史记录里面有没有该城市的时候
+                ArrayList<CityInfoBean> tempLists = new ArrayList<>();
+                historyCitys.remove(0);
+                tempLists.addAll(historyCitys);
+                tempLists.add(cityInfo);
+                historyCitys.clear();
+                historyCitys.addAll(tempLists);
+            } else {
+                historyCitys.add(cityInfo);
+            }
+        }
+
+        String historyCityStr = JsonUtils.toJson(historyCitys);
+        sharedPreUtils.saveValue(CITY_KEY, historyCityStr);
+    }
+
 
     @Override
     public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
