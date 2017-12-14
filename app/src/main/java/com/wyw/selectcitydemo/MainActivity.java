@@ -154,12 +154,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mBodyDatas.add(new CityInfoBean().setName("常熟").setId("0232"));
         mBodyDatas.add(new CityInfoBean().setName("吴江").setId("0232"));
 
-        //indexbar初始化
-        mIndexBar.setmPressedShowTextView(mTvSideBarHint)//设置HintTextView
-                .setNeedRealIndex(true)//设置需要真实的索引
-                .setmLayoutManager(mManager);
-
-        if (mBodyDatas.size() == 0) {
+          if (mBodyDatas.size() == 0) {
             return;
         }
 
@@ -265,6 +260,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mDecoration = new CharDecoration(mActivity, mAllDatas);
         mDecoration.setmDatas(mAllDatas);
 
+        //indexbar初始化
+        mIndexBar.setmPressedShowTextView(mTvSideBarHint)//设置HintTextView
+                .setNeedRealIndex(true)//设置需要真实的索引
+                .setmLayoutManager(mManager);
         mCityRcv.setAdapter(mHeaderAdapter);
 
         /**
@@ -394,18 +393,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
 
-    static class CityViewHolder extends ViewHolder {
-        @BindView(R.id.tv_item_credit_city_tag)
-        protected TextView tvTag;
-
-        @BindView(R.id.tv_item_credit_city_name)
-        protected TextView tvCity;
-
-        public CityViewHolder(View view) {
-            super(view.getContext(), view);
-            ButterKnife.bind(this, view);
-        }
-    }
 
 
     class FilterAdapter extends CommonAdapter<BaseIndexPinyinBean> {
